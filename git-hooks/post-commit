@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Định nghĩa file log
+LOG_FILE="$HOME/git_commit_log.txt"
+
+# Lấy thông tin commit
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+USER_NAME=$(git config user.name)
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+LAST_COMMIT_HASH=$(git rev-parse --short HEAD)
+LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/- /')
+
+# Ghi log vào file
+echo "📌 [$TIMESTAMP] User: $USER_NAME | Branch: $BRANCH_NAME | Commit: $LAST_COMMIT_HASH" >> "$LOG_FILE"
+echo "📝 Message: $LAST_COMMIT_MSG" >> "$LOG_FILE"
+echo "📂 Files Changed:" >> "$LOG_FILE"
+echo "$CHANGED_FILES" >> "$LOG_FILE"
+echo "-----------------------------------" >> "$LOG_FILE"
