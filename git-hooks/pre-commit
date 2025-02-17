@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# ==============================================================
+#  🚀 GIT COMMIT MESSAGE HOOK (Conventional Commits)
+#  🔹 Tự động kiểm tra format commit message trước khi commit
+#  🔹 Ngăn chặn commit sai format, giúp Git log dễ đọc & nhất quán
+#  🔹 Hỗ trợ các loại commit theo Conventional Commits
+# ==============================================================
+
+# ✅ Cấu trúc commit hợp lệ:
+# type(scope): subject
+# <body> (optional)
+# <footer> (optional)
+#
+# 🔹 Trong đó:
+# - `type`  (Bắt buộc): Loại commit (feat, fix, chore, ...)
+# - `scope` (Tùy chọn): Phạm vi thay đổi (auth, api, database, ...)
+# - `subject` (Bắt buộc): Mô tả ngắn gọn về thay đổi (viết ở thể mệnh lệnh)
+#
+# 📌 Ví dụ commit hợp lệ:
+# feat(auth): implement JWT authentication
+# fix(cart): fix checkout button not working
+# docs(readme): update installation instructions
+
+# ==============================================================
+#  🔹 Danh sách các loại commit (Type) + Ý nghĩa 🔹
+# ==============================================================
+
+COMMIT_TYPES=(
+    "feat: ✨ Thêm tính năng mới (Add a new feature)"
+    "fix: 🐛 Sửa lỗi bug (Fix a bug)"
+    "docs: 📚 Cập nhật tài liệu (Documentation changes)"
+    "style: 🎨 Chỉnh sửa format code (Code style, formatting)"
+    "refactor: 🔧 Cải thiện code mà không thay đổi logic (Refactoring code)"
+    "test: 🧪 Thêm hoặc chỉnh sửa test cases (Adding tests)"
+    "chore: 🔨 Thay đổi cấu hình, công cụ (Build tasks, dependencies)"
+    "build: 🏗 Thay đổi build process, dependencies (Build system changes)"
+    "perf: ⚡ Cải thiện hiệu năng (Performance improvements)"
+    "ci: 🤖 Cấu hình CI/CD (CI configuration changes)"
+    "revert: ⏪ Hoàn tác commit trước đó (Revert changes)"
+)
+
+# ==============================================================
+#  🔹 Kiểm tra format commit message 🔹
+# ==============================================================
+
+# Lấy commit message từ file COMMIT_EDITMSG của Git
+commit_msg_file=".git/COMMIT_EDITMSG"
+if [ ! -f "$commit_msg_file" ]; then
+    echo "❌ Không tìm thấy file commit message! Hủy kiểm tra."
+    exit 1
+fi
+
+commit_msg=$(head -n1 "$commit_msg_file")
+
+echo "🔍 Kiểm tra commit message: '$commit_msg'"
+
+# Kiểm tra commit có đúng format không
+if ! echo "$commit_msg" | grep -Eq "^(feat|fix|docs|style|refactor|test|chore|build|perf|ci|revert)(\([a-zA-Z0-9/_-]+\))?: .+"; then
+    echo -e "\n❌  LỖI: Commit message không đúng format!"
+    echo -e "✅  Hãy dùng định dạng: type(scope): subject\n"
+    
+    echo "🔹 Các loại commit hợp lệ:"
+    for commit_type in "${COMMIT_TYPES[@]}"; do
+        echo -e "  - $commit_type"
+    done
+    
+    echo -e "\n📌 Ví dụ commit đúng:"
+    echo "  feat(auth): implement JWT authentication"
+    echo "  fix(cart): fix checkout button not working"
+    echo "  docs(readme): update installation instructions"
+
+    exit 1
+fi
+
+# Nếu commit đúng format, cho phép tiếp tục
+exit 0
