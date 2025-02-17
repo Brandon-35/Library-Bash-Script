@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# URL Webhook của Discord
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/1341087748966191238/3yxajS6t2t8_lBHsvlwX0d0d8EFqp5p5eQ6fXox5amPDn5AHCg2aa8mkDHRafAbHfsuz"
+
+# Lấy tên người dùng Git
+USER_NAME=$(git config user.name)
+
+# Lấy tên dự án từ thư mục hiện tại
+PROJECT_NAME=$(basename "$(git rev-parse --show-toplevel)")
+
+# Lấy danh sách các tệp đã thay đổi
+CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | sed 's/^/- /')
+
+# Kiểm tra nếu không có tệp nào được thay đổi
+if [ -z "$CHANGED_FILES" ]; then
+    echo "Không có tệp nào được thay đổi. Không gửi thông báo."
+    exit 0
+fi
+
+# Tạo payload JSON
+PAYLOAD=$(jq -n \
+  --arg username "$USER_NAME" \
+  --arg project "$PROJECT_NAME" \
+  --arg files "$CHANGED_FILES" \
+  '{username: $username, project: $project, files: $files}')
+
+# Gửi thông báo đến Discord
+curl -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
