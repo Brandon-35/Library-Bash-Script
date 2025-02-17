@@ -12,8 +12,6 @@ if [ -s "$LOG_FILE" ]; then
     # Gửi báo cáo lên Discord
     curl -H "Content-Type: application/json" -X POST -d "$JSON_PAYLOAD" "$DISCORD_WEBHOOK_URL"
 
-    # Xóa log sau khi gửi
-    > "$LOG_FILE"
 else
     echo "❌ Không có commit nào hôm nay."
 fi
