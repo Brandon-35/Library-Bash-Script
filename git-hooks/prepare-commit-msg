@@ -45,6 +45,12 @@ COMMIT_TYPES=(
 
 commit_msg_file="$1"
 
+# Kiểm tra nếu commit là merge tự động, bỏ qua kiểm tra format
+if grep -qE "^Merge branch" "$commit_msg_file"; then
+    echo "🔄 Merge commit detected, skipping commit message validation."
+    exit 0
+fi
+
 # Đọc commit message từ file (câu lệnh git commit -m "..." sẽ ghi vào đây)
 commit_msg=$(head -n1 "$commit_msg_file")
 
