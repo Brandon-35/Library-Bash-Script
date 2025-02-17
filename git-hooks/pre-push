@@ -1,29 +1,28 @@
 #!/bin/bash
 
-# URL Webhook của Discord
+LOG_FILE="$HOME/git_commit_log.txt"
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/1341087748966191238/3yxajS6t2t8_lBHsvlwX0d0d8EFqp5p5eQ6fXox5amPDn5AHCg2aa8mkDHRafAbHfsuz"
 
-# Lấy tên người dùng Git
-USER_NAME=$(git config user.name)
+# Lấy thông tin push
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+REMOTE_URL=$(git remote get-url origin)
 
-# Lấy tên dự án từ thư mục hiện tại
-PROJECT_NAME=$(basename "$(git rev-parse --show-toplevel)")
+# Ghi log push
+echo "🚀 [$TIMESTAMP] Pushed branch '$BRANCH_NAME' to remote: $REMOTE_URL" >> "$LOG_FILE"
+echo "-----------------------------------" >> "$LOG_FILE"
 
-# Lấy danh sách các tệp đã thay đổi
-CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | sed 's/^/- /')
-
-# Kiểm tra nếu không có tệp nào được thay đổi
-if [ -z "$CHANGED_FILES" ]; then
-    echo "Không có tệp nào được thay đổi. Không gửi thông báo."
-    exit 0
+# Kiểm tra nếu webhook bị lỗi
+if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+    echo "⚠️ Discord webhook chưa được cấu hình!"
+    exit 1
 fi
 
 # Tạo payload JSON
-PAYLOAD=$(jq -n \
-  --arg username "$USER_NAME" \
-  --arg project "$PROJECT_NAME" \
-  --arg files "$CHANGED_FILES" \
-  '{username: $username, project: $project, files: $files}')
+PAYLOAD=$(jq -n --arg timestamp "$TIMESTAMP" \
+                    --arg branch "$BRANCH_NAME" \
+                    --arg remote "$REMOTE_URL" \
+                    '{content: ("🚀 New push! \n📅 Time: " + $timestamp + "\n🌿 Branch: " + $branch + "\n🔗 Remote: " + $remote)}')
 
 # Gửi thông báo đến Discord
 curl -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"

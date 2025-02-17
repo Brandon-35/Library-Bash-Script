@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Định nghĩa file log
 LOG_FILE="$HOME/git_commit_log.txt"
 
 # Lấy thông tin commit
@@ -9,7 +8,13 @@ USER_NAME=$(git config user.name)
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 LAST_COMMIT_HASH=$(git rev-parse --short HEAD)
 LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
-CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/- /')
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+
+# Kiểm tra nếu không có file nào thay đổi
+if [ -z "$CHANGED_FILES" ]; then
+    echo "⚠️ Không có file nào thay đổi, không ghi log."
+    exit 0
+fi
 
 # Ghi log vào file
 echo "📌 [$TIMESTAMP] User: $USER_NAME | Branch: $BRANCH_NAME | Commit: $LAST_COMMIT_HASH" >> "$LOG_FILE"
