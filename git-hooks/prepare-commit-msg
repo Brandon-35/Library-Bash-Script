@@ -2,9 +2,8 @@
 
 # ==============================================================
 #  🚀 GIT COMMIT MESSAGE HOOK (Conventional Commits)
-#  🔹 Tự động kiểm tra format commit message trước khi commit
+#  🔹 Kiểm tra commit message trước khi commit
 #  🔹 Ngăn chặn commit sai format, giúp Git log dễ đọc & nhất quán
-#  🔹 Hỗ trợ các loại commit theo Conventional Commits
 # ==============================================================
 
 # ✅ Cấu trúc commit hợp lệ:
@@ -41,16 +40,12 @@ COMMIT_TYPES=(
 )
 
 # ==============================================================
-#  🔹 Kiểm tra format commit message 🔹
+#  🔹 Kiểm tra commit message trước khi commit 🔹
 # ==============================================================
 
-# Lấy commit message từ file COMMIT_EDITMSG của Git
-commit_msg_file=".git/COMMIT_EDITMSG"
-if [ ! -f "$commit_msg_file" ]; then
-    echo "❌ Không tìm thấy file commit message! Hủy kiểm tra."
-    exit 1
-fi
+commit_msg_file="$1"
 
+# Đọc commit message từ file (câu lệnh git commit -m "..." sẽ ghi vào đây)
 commit_msg=$(head -n1 "$commit_msg_file")
 
 echo "🔍 Kiểm tra commit message: '$commit_msg'"
