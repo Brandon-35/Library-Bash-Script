@@ -2,6 +2,7 @@
 current_dir="$(pwd)"  # Current directory
 LOG_FILE="$current_dir/script_log.txt"  # Log file path
 DEFAULT_DIR="$current_dir/my_directory"  # Default directory to create
+WEBHOOK_URL="YOUR_DISCORD_WEBHOOK_URL"  # Discord webhook URL
 
 # Function to check if a command exists
 # Usage: command_exists <command_name>
@@ -156,4 +157,48 @@ function check_endpoint() {
     else
         __color red "Endpoint $url is not reachable."
     fi
+}
+
+# Function to send a notification to Discord
+# Usage: send_discord_notification <message> <embed_title> <embed_description>
+function send_discord_notification() {
+    local message="$1"
+    local embed_title="$2"
+    local embed_description="$3"
+    local url="${4:-https://example.com}"  # Default URL if not provided
+    local color="${5:-15258703}"  # Default color if not provided
+    local footer_text="${6:-Chân trang nhúng}"  # Default footer text if not provided
+    local image_url="${7:-https://link.to/image.jpg}"  # Default image URL if not provided
+    local thumbnail_url="${8:-https://link.to/thumbnail.jpg}"  # Default thumbnail URL if not provided
+    local author_name="${9:-Tên tác giả}"  # Default author name if not provided
+    local author_url="${10:-https://author.url}"  # Default author URL if not provided
+    local author_icon_url="${11:-https://link.to/author/icon.jpg}"  # Default author icon URL if not provided
+
+    curl -X POST "$WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "content": "'"$message"'",
+            "embeds": [
+                {
+                    "title": "'"$embed_title"'",
+                    "description": "'"$embed_description"'",
+                    "url": "'"$url"'",
+                    "color": '"$color"',
+                    "footer": {
+                        "text": "'"$footer_text"'"
+                    },
+                    "image": {
+                        "url": "'"$image_url"'"
+                    },
+                    "thumbnail": {
+                        "url": "'"$thumbnail_url"'"
+                    },
+                    "author": {
+                        "name": "'"$author_name"'",
+                        "url": "'"$author_url"'",
+                        "icon_url": "'"$author_icon_url"'"
+                    }
+                }
+            ]
+        }'
 }
