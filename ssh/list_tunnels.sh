@@ -1,13 +1,9 @@
 #!/bin/bash
 
 # Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+source "$(dirname "$0")/../base/colors.sh"  # Include the colors script
 
-echo -e "${GREEN}Active SSH Tunnels${NC}"
+__color green "Active SSH Tunnels"
 echo "=================="
 
 # Function to parse SSH tunnel details
@@ -36,7 +32,7 @@ parse_tunnel_details() {
 tunnel_processes=$(ps aux | grep "ssh -L" | grep -v grep)
 
 if [ -z "$tunnel_processes" ]; then
-    echo -e "${YELLOW}No active SSH tunnels found${NC}"
+    __color yellow "No active SSH tunnels found"
     exit 0
 fi
 
@@ -84,9 +80,9 @@ echo -e "\n${YELLOW}Total tunnels: $(echo "$tunnel_processes" | wc -l)${NC}"
 
 # Check for tunnel PIDs from auto_docker_tunnel script
 if [ -f ~/.docker_tunnels_pid ]; then
-    echo -e "\n${GREEN}Docker Auto-Tunnels${NC}"
+    __color green "Docker Auto-Tunnels"
     echo "==================="
-    echo -e "${YELLOW}PIDs from auto_docker_tunnel:${NC}"
+    __color yellow "PIDs from auto_docker_tunnel:"
     while read -r pid; do
         if kill -0 $pid 2>/dev/null; then
             status="ACTIVE"
@@ -98,5 +94,5 @@ if [ -f ~/.docker_tunnels_pid ]; then
 fi
 
 # Show how to kill tunnels
-echo -e "\n${YELLOW}To kill a specific tunnel:${NC} kill <PID>"
-echo -e "${YELLOW}To kill all tunnels:${NC} killall ssh"
+__color yellow "To kill a specific tunnel: kill <PID>"
+__color yellow "To kill all tunnels: killall ssh"

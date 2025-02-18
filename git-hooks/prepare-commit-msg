@@ -2,71 +2,71 @@
 
 # ==============================================================
 #  🚀 GIT COMMIT MESSAGE HOOK (Conventional Commits)
-#  🔹 Kiểm tra commit message trước khi commit
-#  🔹 Ngăn chặn commit sai format, giúp Git log dễ đọc & nhất quán
+#  🔹 Check commit message before committing
+#  🔹 Prevent incorrect format commits, making Git log more readable & consistent
 # ==============================================================
 
-# ✅ Cấu trúc commit hợp lệ:
+# ✅ Valid commit structure:
 # type(scope): subject
 # <body> (optional)
 # <footer> (optional)
 #
-# 🔹 Trong đó:
-# - `type`  (Bắt buộc): Loại commit (feat, fix, chore, ...)
-# - `scope` (Tùy chọn): Phạm vi thay đổi (auth, api, database, ...)
-# - `subject` (Bắt buộc): Mô tả ngắn gọn về thay đổi (viết ở thể mệnh lệnh)
+# 🔹 Where:
+# - `type`  (Required): Type of commit (feat, fix, chore, ...)
+# - `scope` (Optional): Scope of changes (auth, api, database, ...)
+# - `subject` (Required): Brief description of the changes (written in imperative mood)
 #
-# 📌 Ví dụ commit hợp lệ:
+# 📌 Example of a valid commit:
 # feat(auth): implement JWT authentication
 # fix(cart): fix checkout button not working
 # docs(readme): update installation instructions
 
 # ==============================================================
-#  🔹 Danh sách các loại commit (Type) + Ý nghĩa 🔹
+#  🔹 List of commit types (Type) + Meaning 🔹
 # ==============================================================
 
 COMMIT_TYPES=(
-    "feat: ✨ Thêm tính năng mới (Add a new feature)"
-    "fix: 🐛 Sửa lỗi bug (Fix a bug)"
-    "docs: 📚 Cập nhật tài liệu (Documentation changes)"
-    "style: 🎨 Chỉnh sửa format code (Code style, formatting)"
-    "refactor: 🔧 Cải thiện code mà không thay đổi logic (Refactoring code)"
-    "test: 🧪 Thêm hoặc chỉnh sửa test cases (Adding tests)"
-    "chore: 🔨 Thay đổi cấu hình, công cụ (Build tasks, dependencies)"
-    "build: 🏗 Thay đổi build process, dependencies (Build system changes)"
-    "perf: ⚡ Cải thiện hiệu năng (Performance improvements)"
-    "ci: 🤖 Cấu hình CI/CD (CI configuration changes)"
-    "revert: ⏪ Hoàn tác commit trước đó (Revert changes)"
+    "feat: ✨ Add a new feature"
+    "fix: 🐛 Fix a bug"
+    "docs: 📚 Documentation changes"
+    "style: 🎨 Code style, formatting"
+    "refactor: 🔧 Refactoring code"
+    "test: 🧪 Adding tests"
+    "chore: 🔨 Build tasks, dependencies"
+    "build: 🏗 Build system changes"
+    "perf: ⚡ Performance improvements"
+    "ci: 🤖 CI configuration changes"
+    "revert: ⏪ Revert changes"
 )
 
 # ==============================================================
-#  🔹 Kiểm tra commit message trước khi commit 🔹
+#  🔹 Check commit message before committing 🔹
 # ==============================================================
 
 commit_msg_file="$1"
 
-# Kiểm tra nếu commit là merge tự động, bỏ qua kiểm tra format
+# Check if the commit is an automatic merge, skip format check
 if grep -qE "^Merge branch" "$commit_msg_file"; then
     echo "🔄 Merge commit detected, skipping commit message validation."
     exit 0
 fi
 
-# Đọc commit message từ file (câu lệnh git commit -m "..." sẽ ghi vào đây)
+# Read commit message from file (the command git commit -m "..." will write here)
 commit_msg=$(head -n1 "$commit_msg_file")
 
-echo "🔍 Kiểm tra commit message: '$commit_msg'"
+echo "🔍 Checking commit message: '$commit_msg'"
 
-# Kiểm tra commit có đúng format không
+# Check if the commit is in the correct format
 if ! echo "$commit_msg" | grep -Eq "^(feat|fix|docs|style|refactor|test|chore|build|perf|ci|revert)(\([a-zA-Z0-9/_-]+\))?: .+"; then
-    echo -e "\n❌  LỖI: Commit message không đúng format!"
-    echo -e "✅  Hãy dùng định dạng: type(scope): subject\n"
+    echo -e "\n❌  ERROR: Commit message is not in the correct format!"
+    echo -e "✅  Please use the format: type(scope): subject\n"
     
-    echo "🔹 Các loại commit hợp lệ:"
+    echo "🔹 Valid commit types:"
     for commit_type in "${COMMIT_TYPES[@]}"; do
         echo -e "  - $commit_type"
     done
     
-    echo -e "\n📌 Ví dụ commit đúng:"
+    echo -e "\n📌 Example of a correct commit:"
     echo "  feat(auth): implement JWT authentication"
     echo "  fix(cart): fix checkout button not working"
     echo "  docs(readme): update installation instructions"
@@ -74,5 +74,5 @@ if ! echo "$commit_msg" | grep -Eq "^(feat|fix|docs|style|refactor|test|chore|bu
     exit 1
 fi
 
-# Nếu commit đúng format, cho phép tiếp tục
+# If the commit is in the correct format, allow to proceed
 exit 0

@@ -4,17 +4,14 @@
 SSH_CONFIG="$HOME/.ssh/config"
 
 # Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+source "$(dirname "$0")/../base/colors.sh"  # Include the colors script
 
 # Allowed image types
 ALLOWED_IMAGES=("php" "node" "mysql")
 
 # Check if the SSH config file exists
 if [ ! -f "$SSH_CONFIG" ]; then
-    echo -e "${RED}Error: SSH config file not found at $SSH_CONFIG${NC}"
+    _color red "Error: SSH config file not found at $SSH_CONFIG"
     exit 1
 fi
 
@@ -23,20 +20,20 @@ hosts=($(grep "^Host " "$SSH_CONFIG" | awk '{print $2}'))
 
 # If there are no hosts, exit
 if [ ${#hosts[@]} -eq 0 ]; then
-    echo -e "${RED}Error: No hosts found in SSH config file.${NC}"
+    _color red "Error: No hosts found in SSH config file."
     exit 1
 fi
 
 # Function to display hosts and let user select
 select_host() {
-    echo -e "${GREEN}Please select a host from the list:${NC}"
+    _color green "Please select a host from the list:"
     PS3="Enter the number corresponding to the host: "
     select host in "${hosts[@]}"; do
         if [[ -n "$host" ]]; then
-            echo -e "${GREEN}You selected: $host${NC}"
+            _color green "You selected: $host"
             break
         else
-            echo -e "${RED}Invalid selection, please try again.${NC}"
+            _color red "Invalid selection, please try again."
         fi
     done
 }
@@ -61,20 +58,20 @@ is_allowed_image() {
 
 # Function to setup tunnels for Docker containers
 setup_docker_tunnels() {
-    echo -e "${GREEN}Fetching Docker container information...${NC}"
+    _color green "Fetching Docker container information..."
     
     # Get Docker container information with image name
     containers=$(ssh "$host" "docker ps --format '{{.Image}} {{.Names}} {{.Ports}}'")
     
     if [ -z "$containers" ]; then
-        echo -e "${RED}No Docker containers found or unable to execute docker ps${NC}"
+        _color red "No Docker containers found or unable to execute docker ps"
         exit 1
     fi
     
     # Array to store tunnel PIDs
     declare -a tunnel_pids
     
-    echo -e "${YELLOW}Setting up tunnels for exposed ports...${NC}"
+    _color yellow "Setting up tunnels for exposed ports..."
     
     echo "$containers" | while read -r image name ports; do
         # Check if image is in allowed list
@@ -84,7 +81,7 @@ setup_docker_tunnels() {
                 port_list=$(echo "$ports" | grep -o '0.0.0.0:[0-9]*' | cut -d':' -f2)
                 
                 for port in $port_list; do
-                    echo -e "${GREEN}Setting up tunnel for $name ($image): localhost:$port${NC}"
+                    _color green "Setting up tunnel for $name ($image): localhost:$port"
                     
                     # Setup SSH tunnel
                     ssh -L "$port:localhost:$port" "$host" -N &
@@ -94,26 +91,26 @@ setup_docker_tunnels() {
                     echo "Tunnel created (PID: $tunnel_pid)"
                 done
             else
-                echo -e "${YELLOW}Skipping $name ($image): No exposed ports${NC}"
+                _color yellow "Skipping $name ($image): No exposed ports"
             fi
         else
-            echo -e "${YELLOW}Skipping $name ($image): Not in allowed image list${NC}"
+            _color yellow "Skipping $name ($image): Not in allowed image list"
         fi
     done
     
     # Save tunnel PIDs to a file for later cleanup
     if [ ${#tunnel_pids[@]} -gt 0 ]; then
         printf "%s\n" "${tunnel_pids[@]}" > ~/.docker_tunnels_pid
-        echo -e "${GREEN}All tunnels established!${NC}"
-        echo -e "${YELLOW}Active tunnels:${NC}"
+        _color green "All tunnels established!"
+        _color yellow "Active tunnels:"
         ps -f -p "${tunnel_pids[@]}" 2>/dev/null
     else
-        echo -e "${YELLOW}No ports to tunnel found${NC}"
+        _color yellow "No ports to tunnel found"
     fi
 }
 
 # Main script
-echo -e "${GREEN}Docker SSH Tunnel Manager${NC}"
+_color green "Docker SSH Tunnel Manager"
 echo "===================="
 
 # Select the host interactively
@@ -122,7 +119,7 @@ select_host
 # Get hostname
 selected_host=$(get_hostname "$host")
 if [ -z "$selected_host" ]; then
-    echo -e "${RED}Error: Could not find HostName for '$host'${NC}"
+    _color red "Error: Could not find HostName for '$host'"
     exit 1
 fi
 
@@ -131,15 +128,15 @@ setup_docker_tunnels
 
 # Keep script running and handle cleanup on exit
 cleanup() {
-    echo -e "${YELLOW}Cleaning up tunnels...${NC}"
+    _color yellow "Cleaning up tunnels..."
     if [ -f ~/.docker_tunnels_pid ]; then
         kill $(cat ~/.docker_tunnels_pid) 2>/dev/null
         rm ~/.docker_tunnels_pid
     fi
-    echo -e "${GREEN}Tunnels closed. Goodbye!${NC}"
+    _color green "Tunnels closed. Goodbye!"
 }
 
 trap cleanup EXIT
 
-echo -e "${GREEN}Tunnels are running. Press Ctrl+C to stop all tunnels.${NC}"
+_color green "Tunnels are running. Press Ctrl+C to stop all tunnels."
 wait

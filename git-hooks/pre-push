@@ -3,28 +3,28 @@
 LOG_FILE="$HOME/git_commit_log.txt"
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/1341087748966191238/3yxajS6t2t8_lBHsvlwX0d0d8EFqp5p5eQ6fXox5amPDn5AHCg2aa8mkDHRafAbHfsuz"
 
-# Lấy thông tin người push, nhánh, remote repo và timestamp
+# Get information about the pusher, branch, remote repo, and timestamp
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 USER_NAME=$(git config user.name)
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 REMOTE_URL=$(git remote get-url origin)
 
-# Ghi log push vào file
+# Log push information to file
 echo "🚀 [$TIMESTAMP] User: $USER_NAME | Pushed branch '$BRANCH_NAME' to remote: $REMOTE_URL" >> "$LOG_FILE"
 echo "-----------------------------------" >> "$LOG_FILE"
 
-# Kiểm tra nếu webhook bị lỗi
+# Check if the webhook is configured
 if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-    echo "⚠️ Discord webhook chưa được cấu hình!"
+    echo "⚠️ Discord webhook is not configured!"
     exit 1
 fi
 
-# Tạo payload JSON gửi lên Discord
+# Create JSON payload to send to Discord
 PAYLOAD=$(jq -n --arg timestamp "$TIMESTAMP" \
                     --arg user "$USER_NAME" \
                     --arg branch "$BRANCH_NAME" \
                     --arg remote "$REMOTE_URL" \
                     '{content: ("🚀 *New push detected!* \n👤 User: " + $user + "\n📅 Time: " + $timestamp + "\n🌿 Branch: " + $branch + "\n🔗 Remote: " + $remote)}')
 
-# Gửi thông báo đến Discord
+# Send notification to Discord
 curl -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
